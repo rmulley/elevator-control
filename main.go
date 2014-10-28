@@ -292,7 +292,7 @@ func SortGoalFloors(elevator Elevator) Elevator {
 	if elevator.Direction > 0 {
 		sort.Ints(goalFloorsSorted)
 	} else {
-		//		sort.Sort(sort.Reverse(sort.IntSlice(goalFloorsSorted)))
+		sort.Sort(sort.Reverse(sort.IntSlice(goalFloorsSorted)))
 	} //else
 
 	elevator.GoalFloors = goalFloorsSorted
