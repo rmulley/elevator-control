@@ -267,6 +267,7 @@ func Step(elevators []Elevator) []Elevator {
 func SortGoalFloors(elevator Elevator) Elevator {
 	var (
 		goalFloorsExtra, goalFloorsSorted []int
+		dupeFloors                        = make(map[int]bool)
 	) //var
 
 	// If no goal floors no work to do
@@ -275,27 +276,23 @@ func SortGoalFloors(elevator Elevator) Elevator {
 	} //if
 
 	for _, goalFloor := range elevator.GoalFloors {
-		if elevator.Direction > 0 && goalFloor >= elevator.Floor {
-			goalFloorsSorted = append(goalFloorsSorted, goalFloor)
-		} else if elevator.Direction < 0 && goalFloor <= elevator.Floor {
-			goalFloorsSorted = append(goalFloorsSorted, goalFloor)
-		} else {
-			goalFloorsExtra = append(goalFloorsExtra, goalFloor)
-		} //else
+		if _, isSet := dupeFloors[goalFloor]; !isSet {
+			if elevator.Direction > 0 && goalFloor >= elevator.Floor {
+				goalFloorsSorted = append(goalFloorsSorted, goalFloor)
+			} else if elevator.Direction < 0 && goalFloor <= elevator.Floor {
+				goalFloorsSorted = append(goalFloorsSorted, goalFloor)
+			} else {
+				goalFloorsExtra = append(goalFloorsExtra, goalFloor)
+			} //else
+
+			dupeFloors[goalFloor] = true
+		} //if
 	} //for
 
 	if elevator.Direction > 0 {
 		sort.Ints(goalFloorsSorted)
 	} else {
-		var (
-			temp = make([]int, len(goalFloorsSorted))
-		) //var
-
-		for i, _ := range goalFloorsSorted {
-			temp[len(temp)-i] = goalFloorsSorted[i]
-		} //for
-
-		goalFloorsSorted = temp
+		//		sort.Sort(sort.Reverse(sort.IntSlice(goalFloorsSorted)))
 	} //else
 
 	elevator.GoalFloors = goalFloorsSorted
