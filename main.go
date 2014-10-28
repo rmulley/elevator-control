@@ -26,7 +26,7 @@ func main() {
 		rdr       *bufio.Reader
 		elevators []Elevator
 		// Flags
-		numElevators *int = flag.Int("-n", 4, "Number of elevators not set, defaulting to 4.")
+		numElevators *int = flag.Int("n", 4, "Number of elevators not set, defaulting to 4.")
 	) //var
 
 	flag.Parse()
