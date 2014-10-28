@@ -211,7 +211,7 @@ func Step(elevators []Elevator) []Elevator {
 			continue
 		} //if
 
-		//elevator = SortGoalFloors(elevator)
+		elevator = SortGoalFloors(elevator)
 
 		// If the elevator is not at it's current goal floor, then it should keep moving
 		if elevator.Floor != elevator.GoalFloors[0] {
@@ -287,7 +287,15 @@ func SortGoalFloors(elevator Elevator) Elevator {
 	if elevator.Direction > 0 {
 		sort.Ints(goalFloorsSorted)
 	} else {
-		//sort.Reverse(goalFloorsSorted)
+		var (
+			temp = make([]int, len(goalFloorsSorted))
+		) //var
+
+		for i, _ := range goalFloorsSorted {
+			temp[len(temp)-i] = goalFloorsSorted[i]
+		} //for
+
+		goalFloorsSorted = temp
 	} //else
 
 	elevator.GoalFloors = goalFloorsSorted
