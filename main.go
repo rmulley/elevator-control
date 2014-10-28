@@ -7,16 +7,17 @@ import (
 	"log"
 	"math"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 ) //import
 
 type Elevator struct {
-	Id         uint
-	Floor      uint
-	GoalFloors []uint
+	Id         int
+	Floor      int
+	GoalFloors []int
 	Direction  int
-	Score      uint
+	Score      int
 } //Elevator
 
 func main() {
@@ -35,8 +36,8 @@ func main() {
 
 	for i, _ := range elevators {
 		// Initialize elevators with an ID and a goal floor
-		elevators[i].Id = uint(i)
-		elevators[i].GoalFloors = make([]uint, 1)
+		elevators[i].Id = int(i)
+		elevators[i].GoalFloors = make([]int, 1)
 	} //for
 
 	for {
@@ -78,7 +79,7 @@ func main() {
 		} //if
 
 		// Assign highest scoring elevator to pickup new customer
-		elevators = Pickup(uint(pickupFloor), uint(goalFloor), elevators)
+		elevators = Pickup(pickupFloor, goalFloor, elevators)
 
 		// Move the elevators one floor
 		elevators = Step(elevators)
@@ -95,22 +96,22 @@ func main() {
 } //main
 
 // Status returns the ID, current floor number, and current goal floor number.
-func (this Elevator) Status() (Id, Floor, GoalFloor uint) {
+func (this Elevator) Status() (Id, Floor, GoalFloor int) {
 	return this.Id, this.Floor, this.GoalFloors[0]
 } //Status
 
 // Update alters the current floor and direction for a single Elevator.
-func (this Elevator) Update(curFloor uint, direction int) {
+func (this Elevator) Update(curFloor int, direction int) {
 	this.Floor = curFloor
 	this.Direction = direction
 } //Update
 
 // Pickup algorithmically determines which elevator will pick up the the person requesting a ride
-func Pickup(pickupFloor, goalFloor uint, elevators []Elevator) []Elevator {
+func Pickup(pickupFloor, goalFloor int, elevators []Elevator) []Elevator {
 	var (
-		idChosenElevator     uint
-		curClosest, topScore uint = 1000, 0
-		closestElevators     map[uint]bool
+		idChosenElevator     int
+		curClosest, topScore int = 1000, 0
+		closestElevators     map[int]bool
 	) //var
 
 	// Determine which elevator is best to pick up the person at the pickup floor
@@ -145,10 +146,10 @@ func Pickup(pickupFloor, goalFloor uint, elevators []Elevator) []Elevator {
 
 		// Keep track of closest elevator(s).
 		// If new closest is found, forget previous closest elevators
-		if uint(floorsAway) < curClosest {
-			closestElevators = make(map[uint]bool, 0)
+		if int(floorsAway) < curClosest {
+			closestElevators = make(map[int]bool, 0)
 			closestElevators[elevator.Id] = true
-		} else if uint(floorsAway) == curClosest { // Multiple elevators are closest
+		} else if int(floorsAway) == curClosest { // Multiple elevators are closest
 			closestElevators[elevator.Id] = true
 		} //else if
 
@@ -174,8 +175,6 @@ func Pickup(pickupFloor, goalFloor uint, elevators []Elevator) []Elevator {
 			elevator.Score++
 		} //if
 
-		log.Println(elevator.Id, elevator.Score)
-
 		if elevator.Score > topScore {
 			idChosenElevator = elevator.Id
 			topScore = elevator.Score
@@ -195,8 +194,6 @@ func Pickup(pickupFloor, goalFloor uint, elevators []Elevator) []Elevator {
 				elevator.Direction = -1
 			} //else if
 
-			log.Println("Elevator", elevator.Id, "is being updated now")
-
 			elevator.GoalFloors = append(elevator.GoalFloors, pickupFloor, goalFloor)
 			elevators[i] = elevator
 			break
@@ -209,24 +206,21 @@ func Pickup(pickupFloor, goalFloor uint, elevators []Elevator) []Elevator {
 // Step increments each elevators position if they have a goal floor which they are not currently at.
 func Step(elevators []Elevator) []Elevator {
 	for i, elevator := range elevators {
-		log.Println("Elevator", i, "is being ran.")
-		log.Println("debug 1")
-
 		// Elevator is not moving, has nowhere to go
 		if len(elevator.GoalFloors) == 0 {
 			continue
 		} //if
 
+		//elevator = SortGoalFloors(elevator)
+
 		// If the elevator is not at it's current goal floor, then it should keep moving
 		if elevator.Floor != elevator.GoalFloors[0] {
-			log.Println("debug 2")
 			// If the goal floor is greater than the current floor, the elevator needs to go up
 			if elevator.GoalFloors[0] > elevator.Floor {
 				// Change the direction of the elevator if needed
 				if elevator.Direction < 0 {
 					elevator.Direction = 1
 				} //if
-				log.Println("debug 3")
 
 				// Move the elevator up a floor
 				elevator.Floor++
@@ -235,41 +229,33 @@ func Step(elevators []Elevator) []Elevator {
 				if elevator.Direction > 0 {
 					elevator.Direction = -1
 				} //if
-				log.Println("debug 4")
 
 				// Move the elevator down a floor
 				elevator.Floor--
 			} //else if
 		} else { // If the elevator is at it's current goal floor, then there is nothing to do
-			log.Println("debug 5")
 			// Elevator floor is at goal floor, grab next floor (if available)
 			if len(elevator.GoalFloors) > 1 {
 				var (
-					updatedGoalFloors []uint
+					updatedGoalFloors []int
 				) //var
-
-				log.Println("debug 6")
 
 				// Wasn't sure if there was a built-in that is the opposite of append (a 'pop' function)
 				// Instead I wrote this loop to remove the goal floor the elevator is currently at
 				if len(elevator.GoalFloors) > 1 {
 					for ndx, goal := range elevator.GoalFloors {
-						log.Println("debug 7")
 						if ndx != 0 {
-							log.Println("debug 8")
 							updatedGoalFloors = append(updatedGoalFloors, goal)
 						} //if
 					} //for
-					log.Println("debug 9")
+
 					elevator.GoalFloors = updatedGoalFloors
 				} else {
-					elevator.GoalFloors = make([]uint, 0)
+					elevator.GoalFloors = make([]int, 0)
 				} //else
 			} else { // Reset GoalFloors
-				elevator.GoalFloors = make([]uint, 0)
+				elevator.GoalFloors = make([]int, 0)
 			} //else
-
-			log.Println("debug 10")
 		} //else
 
 		elevators[i] = elevator
@@ -277,3 +263,35 @@ func Step(elevators []Elevator) []Elevator {
 
 	return elevators
 } //Step
+
+func SortGoalFloors(elevator Elevator) Elevator {
+	var (
+		goalFloorsExtra, goalFloorsSorted []int
+	) //var
+
+	// If no goal floors no work to do
+	if len(elevator.GoalFloors) == 0 {
+		return elevator
+	} //if
+
+	for _, goalFloor := range elevator.GoalFloors {
+		if elevator.Direction > 0 && goalFloor >= elevator.Floor {
+			goalFloorsSorted = append(goalFloorsSorted, goalFloor)
+		} else if elevator.Direction < 0 && goalFloor <= elevator.Floor {
+			goalFloorsSorted = append(goalFloorsSorted, goalFloor)
+		} else {
+			goalFloorsExtra = append(goalFloorsExtra, goalFloor)
+		} //else
+	} //for
+
+	if elevator.Direction > 0 {
+		sort.Ints(goalFloorsSorted)
+	} else {
+		//sort.Reverse(goalFloorsSorted)
+	} //else
+
+	elevator.GoalFloors = goalFloorsSorted
+	elevator.GoalFloors = append(elevator.GoalFloors, goalFloorsExtra...)
+
+	return elevator
+} //SortGoalFloors
